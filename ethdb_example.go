@@ -49,7 +49,7 @@ func GetBlockByHash(db ethdb.Database, hash common.Hash) *types.Block {
 	return GetBlock(db, hash, *number)
 }
 
-func loadTrieState(db ethdb.Database) {
+func visitBlock(db ethdb.Database) {
 	head := rawdb.ReadHeadBlockHash(db)
 	fmt.Println("headblock hash=", head)
 	if head == (common.Hash{}) {
@@ -63,9 +63,22 @@ func loadTrieState(db ethdb.Database) {
 		return
 	}
 	fmt.Println("currentBlock=", currentBlock)
+
+	receipts := rawdb.ReadReceipts(db, currentBlock.Hash(), currentBlock.NumberU64())
+	fmt.Printf("%v receipts\n", len(receipts))
+	for i, rcpt := range receipts {
+		fmt.Printf("%v: %v\n", i, rcpt.TxHash.Hex())
+	}
+	body := rawdb.ReadBody(db, currentBlock.Hash(), currentBlock.NumberU64())
+	fmt.Printf("%v transactions\n", len(body.Transactions))
+	for i, tr := range body.Transactions {
+		trjson, _ := tr.MarshalJSON()
+		fmt.Printf("%v: %v\n", i, string(trjson))
+	}
+
 }
 
 func main() {
 	db := opendb()
-	loadTrieState(db)
+	visitBlock(db)
 }
