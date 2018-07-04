@@ -10,6 +10,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethdb"
+
+	"github.com/ethereum/go-ethereum/consensus/ethash"
+	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/ethereum/go-ethereum/params"
 	// "github.com/ethereum/go-ethereum/rlp"
 	"os"
 	// "time"
@@ -78,7 +83,40 @@ func visitBlock(db ethdb.Database) {
 
 }
 
+/* TODO: full chain verification */
+func verifyChain(db ethdb.Database) {
+	engine := ethash.NewFaker()
+	chain, err := core.NewBlockChain(db, nil, params.TestChainConfig, engine, vm.Config{})
+	if err != nil {
+		fmt.Printf("failed to create new chain manager: %v", err)
+	}
+	fmt.Println("chain=", chain)
+	/*
+		var results <-chan error
+		_, results = engine.VerifyHeaders(chain, []*types.Header{headers[i]}, []bool{true})
+
+			// Wait for the verification result
+				select {
+				case result := <-results:
+					if (result == nil) != valid {
+						t.Errorf("test %d.%d: validity mismatch: have %v, want %v", i, j, result, valid)
+					}
+				case <-time.After(time.Second):
+					t.Fatalf("test %d.%d: verification timeout", i, j)
+				}
+				// Make sure no more data is returned
+				select {
+				case result := <-results:
+					t.Fatalf("test %d.%d: unexpected result returned: %v", i, j, result)
+				case <-time.After(25 * time.Millisecond):
+				}
+			}
+			chain.InsertChain(blocks[i : i+1])
+		}*/
+}
+
 func main() {
 	db := opendb()
 	visitBlock(db)
+	//verifyChain(db)
 }
